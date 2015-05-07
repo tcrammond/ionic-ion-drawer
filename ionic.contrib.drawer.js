@@ -1,278 +1,292 @@
-(function() {
+(function () {
 
-'use strict';
+    'use strict';
 
-/**
- * The ionic-contrib-frosted-glass is a fun frosted-glass effect
- * that can be used in iOS apps to give an iOS 7 frosted-glass effect
- * to any element.
- */
-angular.module('ionic.contrib.drawer', ['ionic'])
+    /**
+     * The ionic-contrib-frosted-glass is a fun frosted-glass effect
+     * that can be used in iOS apps to give an iOS 7 frosted-glass effect
+     * to any element.
+     */
+    angular.module('ionic.contrib.drawer', ['ionic'])
 
-.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', '$ionicPlatform', function($element, $attr, $ionicGesture, $document, $ionicPlatform) {
-  var el = $element[0];
-  var dragging = false;
-  var startX, lastX, offsetX, newX, startDir;
+        .controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', '$ionicPlatform', function ($element, $attr, $ionicGesture, $document, $ionicPlatform) {
+            var el = $element[0];
+            var dragging = false;
+            var startX, lastX, offsetX, newX, startDir;
 
-  // How far to drag before triggering
-  var thresholdX = 15;
-  // How far from edge before triggering
-  var edgeX = 40;
+            // How far to drag before triggering
+            var thresholdX = 15;
+            // How far from edge before triggering
+            var edgeX = 40;
 
-  var SIDE_LEFT = 'left';
-  var SIDE_RIGHT = 'right';
-  var STATE_CLOSE = 'close';
-  var STATE_OPEN = 'open';
+            var SIDE_LEFT = 'left';
+            var SIDE_RIGHT = 'right';
+            var STATE_CLOSE = 'close';
+            var STATE_OPEN = 'open';
 
-  var isTargetDrag = false;
+            var isTargetDrag = false;
 
-  var side = $attr.side === SIDE_LEFT ? SIDE_LEFT : SIDE_RIGHT;
-  var width = el.clientWidth;
-  
-  // Handle back button
-  var unregisterBackAction;
-  
-  // Current State of Drawer
-  var drawerState = STATE_CLOSE;
-  
-  // Drawer overlay
-  var $overlay = angular.element('<div class="drawer-overlay" />');
-  var overlayEl = $overlay[0];
-  var overlayState = STATE_CLOSE;
-  
-  $element.parent().prepend(overlayEl);
-  
-  var toggleOverlay = function(state) {
-    if (overlayState !== state) {
-      ionic.requestAnimationFrame(function() {
-        var translateX = state === STATE_CLOSE ? '-100' : '0';
-        overlayEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + '%, 0, 0)';
-      });
-      overlayState = state;
-    }
-  };
+            var side = $attr.side === SIDE_LEFT ? SIDE_LEFT : SIDE_RIGHT;
+            var width = el.clientWidth;
 
-  var enableAnimation = function() {
-    $element.addClass('animate');
-    $overlay.addClass('animate');
-  };
-  
-  var disableAnimation = function() {
-    $element.removeClass('animate');
-    $overlay.removeClass('animate');
-  };
+            // Handle back button
+            var unregisterBackAction;
 
-  // Check if this is on target or not
-  var isTarget = function(targetEl) {
-    while (targetEl) {
-      if (targetEl === el) {
-        return true;
-      }
-      targetEl = targetEl.parentNode;
-    }
-  };
+            // Current State of Drawer
+            var drawerState = STATE_CLOSE;
 
-  var isOpen = function() {
-    return drawerState === STATE_OPEN;
-  };
+            // Drawer overlay
+            var $overlay = angular.element('<div class="drawer-overlay" />');
+            var overlayEl = $overlay[0];
+            var overlayState = STATE_CLOSE;
 
-  var startDrag = function(e) {
-    disableAnimation();
-    toggleOverlay(STATE_OPEN);
+            $element.parent().prepend(overlayEl);
 
-    dragging = true;
-    offsetX = lastX - startX;
-  };
+            var toggleOverlay = function (state) {
+                if (overlayState !== state) {
+                    ionic.requestAnimationFrame(function () {
+                        var translateX = state === STATE_CLOSE ? '-100' : '0';
+                        overlayEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + '%, 0, 0)';
+                    });
+                    overlayState = state;
+                }
+            };
 
-  var startTargetDrag = function(e) {
-    disableAnimation();
-    toggleOverlay(STATE_OPEN);
+            var enableAnimation = function () {
+                $element.addClass('animate');
+                $overlay.addClass('animate');
+            };
 
-    dragging = true;
-    isTargetDrag = true;
-    offsetX = lastX - startX;
-  };
+            var disableAnimation = function () {
+                $element.removeClass('animate');
+                $overlay.removeClass('animate');
+            };
 
-  var doEndDrag = function(e) {
-    startX = lastX = offsetX = startDir = null;
-    isTargetDrag = false;
+            // Check if this is on target or not
+            var isTarget = function (targetEl) {
+                while (targetEl) {
+                    if (targetEl === el) {
+                        return true;
+                    }
+                    targetEl = targetEl.parentNode;
+                }
+            };
 
-    if (!dragging) {
-      return;
-    }
+            var isOpen = function () {
+                return drawerState === STATE_OPEN;
+            };
 
-    dragging = false;
+            var startDrag = function (e) {
+                disableAnimation();
+                toggleOverlay(STATE_OPEN);
 
-    enableAnimation();
+                dragging = true;
+                offsetX = lastX - startX;
+            };
 
-    var translateX = 0;
-    var opacity = 0;
-    
-    if (newX < (-width / 2)) {
-      translateX = -width;
-      drawerState = STATE_CLOSE;
-    } else {
-      opacity = 1;
-      drawerState = STATE_OPEN;
-    }
+            var startTargetDrag = function (e) {
+                disableAnimation();
+                toggleOverlay(STATE_OPEN);
 
-    toggleOverlay(drawerState);
+                dragging = true;
+                isTargetDrag = true;
+                offsetX = lastX - startX;
+            };
 
-    ionic.requestAnimationFrame(function() {
-      overlayEl.style.opacity = opacity;
-      el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + 'px, 0, 0)';
-    });
-  };
+            var doEndDrag = function (e) {
+                startX = lastX = offsetX = startDir = null;
+                isTargetDrag = false;
 
-  var doDrag = function(e) {
-    if (e.defaultPrevented) {
-      return;
-    }
-    
-    var finger = e.gesture.touches[0];
-    var dir = e.gesture.direction;
+                if (!dragging) {
+                    return;
+                }
 
-    if (!lastX) {
-      startX = finger.pageX;
-    }
+                dragging = false;
 
-    if (!startDir) {
-      startDir = dir;
-    }
+                enableAnimation();
 
-    lastX = finger.pageX;
-    
-    if (startDir === 'down' || startDir === 'up') {
-      return;
-    }
+                var translateX = 0;
+                var opacity = 0;
 
-    if (!dragging) {
-      // Dragged 15 pixels and finger is by edge
-      if (Math.abs(lastX - startX) > thresholdX) {
-        if (isOpen()) {
-          if (dir === SIDE_RIGHT) {
-            return;
-          }
-        } else {
-          if (dir === SIDE_LEFT) {
-            return;
-          }
-        }
+                if (newX < (-width / 2)) {
+                    translateX = -width;
+                    drawerState = STATE_CLOSE;
+                } else {
+                    opacity = 1;
+                    drawerState = STATE_OPEN;
+                }
 
-        if (isTarget(e.target)) {
-          startTargetDrag(e);
-        } else if(startX < edgeX) {
-          startDrag(e);
-        } 
-      }
-    } else {
-      e.gesture.srcEvent.stopImmediatePropagation();
+                toggleOverlay(drawerState);
 
-      if (e.gesture.deltaTime < 200) {
-        if (isOpen()) {
-          if (dir === SIDE_LEFT) {
-            return newX = -width;
-          }
-        } else {
-          if (dir === SIDE_RIGHT) {
-            return newX = 0;
-          }
-        }
-      }
+                ionic.requestAnimationFrame(function () {
+                    overlayEl.style.opacity = opacity;
+                    el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + 'px, 0, 0)';
+                });
+            };
 
-      newX = Math.min(0, (-width + (lastX - offsetX)));
+            var doDrag = function (e) {
+                if (e.defaultPrevented) {
+                    return;
+                }
 
-      var opacity = 1 + (newX / width);
-      
-      if (opacity < 0) {
-        opacity = 0;
-      }
-      
-      ionic.requestAnimationFrame(function() {
-        overlayEl.style.opacity = opacity;
-        el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + newX + 'px, 0, 0)';
-      }); 
-    }
+                var finger = e.gesture.touches[0];
+                var dir = e.gesture.direction;
 
-    if (dragging) {
-      e.gesture.srcEvent.preventDefault();
-    }
-  };
-  
-  var hardwareBackCallback = function() {
-    this.close();
-  }.bind(this);
-  
-  this.close = function() {
-    drawerState = STATE_CLOSE;
-    enableAnimation();
-    toggleOverlay(STATE_CLOSE);
+                if (!lastX) {
+                    startX = finger.pageX;
+                }
 
-    ionic.requestAnimationFrame(function() {
-      overlayEl.style.opacity = 0;
-      el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (side === SIDE_LEFT ? '-' : '') + '100%, 0, 0)';
-    });
-    
-    if (unregisterBackAction) {
-      unregisterBackAction();
-    }
-  };
+                if (!startDir) {
+                    startDir = dir;
+                }
 
-  this.open = function() {
-    drawerState = STATE_OPEN;
-    enableAnimation();
-    toggleOverlay(STATE_OPEN);
-    ionic.requestAnimationFrame(function() {
-      overlayEl.style.opacity = 1;
-      el.style[ionic.CSS.TRANSFORM] = 'translate3d(0, 0, 0)';
-    });
-    
-    unregisterBackAction = $ionicPlatform.registerBackButtonAction(hardwareBackCallback, 100);
-  };
-  
-  this.isOpen = isOpen;
+                lastX = finger.pageX;
 
-  $ionicGesture.on('drag', doDrag, $document);
-  $ionicGesture.on('dragend', doEndDrag, $document);
-  $overlay.on('click', this.close);
-}])
+                if (startDir === 'down' || startDir === 'up') {
+                    return;
+                }
 
-.directive('drawer', ['$rootScope', '$ionicGesture', function($rootScope, $ionicGesture) {
-  return {
-    restrict: 'E',
-    controller: 'drawerCtrl',
-    link: function($scope, $element, $attr, ctrl) {
-      $element.addClass($attr.side);
-      
-      $scope.openDrawer = function() {
-        ctrl.open();
-      };
-      
-      $scope.closeDrawer = function() {
-        ctrl.close();
-      };
-      
-      $scope.toggleDrawer = function() {
-        if (ctrl.isOpen()) {
-          ctrl.close();
-        } else {
-          ctrl.open();
-        }
-      };
-    }
-  }
-}])
+                if (!dragging) {
+                    // Dragged 15 pixels and finger is by edge
+                    if (Math.abs(lastX - startX) > thresholdX) {
+                        if (isOpen()) {
+                            if (dir === SIDE_RIGHT) {
+                                return;
+                            }
+                        } else {
+                            if (dir === SIDE_LEFT) {
+                                return;
+                            }
+                        }
 
-.directive('drawerClose', ['$rootScope', function($rootScope) {
-  return {
-    restrict: 'A',
-    link: function($scope, $element) {
-      $element.bind('click', function() {
-        var drawerCtrl = $element.inheritedData('$drawerController');
-        drawerCtrl.close();
-      });
-    }
-  }
-}]);
+                        if (isTarget(e.target)) {
+                            startTargetDrag(e);
+                        } else if (startX < edgeX) {
+                            startDrag(e);
+                        }
+                    }
+                } else {
+                    e.gesture.srcEvent.stopImmediatePropagation();
+
+                    if (e.gesture.deltaTime < 200) {
+                        if (isOpen()) {
+                            if (dir === SIDE_LEFT) {
+                                return newX = -width;
+                            }
+                        } else {
+                            if (dir === SIDE_RIGHT) {
+                                return newX = 0;
+                            }
+                        }
+                    }
+
+                    newX = Math.min(0, (-width + (lastX - offsetX)));
+
+                    var opacity = 1 + (newX / width);
+
+                    if (opacity < 0) {
+                        opacity = 0;
+                    }
+
+                    ionic.requestAnimationFrame(function () {
+                        overlayEl.style.opacity = opacity;
+                        el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + newX + 'px, 0, 0)';
+                    });
+                }
+
+                if (dragging) {
+                    e.gesture.srcEvent.preventDefault();
+                }
+            };
+
+            var hardwareBackCallback = function () {
+                this.close();
+            }.bind(this);
+
+            this.close = function () {
+                drawerState = STATE_CLOSE;
+                enableAnimation();
+                toggleOverlay(STATE_CLOSE);
+
+                ionic.requestAnimationFrame(function () {
+                    overlayEl.style.opacity = 0;
+                    el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (side === SIDE_LEFT ? '-' : '') + '100%, 0, 0)';
+                });
+
+                if (unregisterBackAction) {
+                    unregisterBackAction();
+                }
+            };
+
+            this.open = function () {
+                drawerState = STATE_OPEN;
+                enableAnimation();
+                toggleOverlay(STATE_OPEN);
+                ionic.requestAnimationFrame(function () {
+                    overlayEl.style.opacity = 1;
+                    el.style[ionic.CSS.TRANSFORM] = 'translate3d(0, 0, 0)';
+                });
+
+                unregisterBackAction = $ionicPlatform.registerBackButtonAction(hardwareBackCallback, 100);
+            };
+
+            this.isOpen = isOpen;
+
+            $ionicGesture.on('drag', doDrag, $document);
+            $ionicGesture.on('dragend', doEndDrag, $document);
+            $overlay.on('click', this.close);
+        }])
+
+        .directive('drawer', ['$rootScope', '$ionicGesture', '$timeout', function ($rootScope, $ionicGesture, $timeout) {
+            return {
+                restrict: 'E',
+                controller: 'drawerCtrl',
+                link: function ($scope, $element, $attr, ctrl) {
+                    $element.addClass($attr.side);
+
+                    $scope.openDrawer = function () {
+                        var el = $element.parent();
+
+                        ctrl.open();
+
+                        /*
+                        Close the drawer when user taps anywhere else in the view
+                        */
+                        var closeHandler = function () {
+                            ctrl.close();
+                            el.unbind('click', closeHandler);
+                        };
+
+                        $timeout(function () {
+                            el.bind('click', closeHandler);
+                        });
+                    };
+
+                    $scope.closeDrawer = function () {
+                        ctrl.close();
+                    };
+
+                    $scope.toggleDrawer = function () {
+                        if (ctrl.isOpen()) {
+                            ctrl.close();
+                        } else {
+                            ctrl.open();
+                        }
+                    };
+                }
+            }
+        }])
+
+        .directive('drawerClose', ['$rootScope', function ($rootScope) {
+            return {
+                restrict: 'A',
+                link: function ($scope, $element) {
+                    $element.bind('click', function () {
+                        var drawerCtrl = $element.inheritedData('$drawerController');
+                        drawerCtrl.close();
+                    });
+                }
+            }
+        }]);
 
 })();
