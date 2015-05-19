@@ -244,6 +244,8 @@
                 link: function ($scope, $element, $attr, ctrl) {
                     $element.addClass($attr.side);
 
+                    $element.detach().appendTo('body');
+
                     $scope.openDrawer = function () {
                         var el = $element.parent();
 
